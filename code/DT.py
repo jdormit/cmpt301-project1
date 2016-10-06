@@ -66,7 +66,7 @@ class DT(object):
                 N = rowCol[0]
                 res = np.zeros(N)
                 for n in range(N):
-                    ans = self.DTpredict(model, test_case[n,:])
+                    ans = self.DTpredict(model, test_case[n, :])
                     res[n] = ans
             return res
         print("Error: unknown DT mode: need train or predict")
@@ -78,7 +78,7 @@ class DT(object):
         # features (X) may not be binary... you should *threshold* them at
         # 0.5, so that anything < 0.5 is a "0" and anything >= 0.5 is a "1"
         #
-        # we want to return a *tree*. the way we represent this in our model 
+        # we want to return a *tree*. the way we represent this in our model
         # is that the tree is a Python dictionary.
         #
         # to represent a *leaf* that predicts class 3, we can say:
@@ -104,7 +104,7 @@ class DT(object):
             node['label'] = label
             return node
 
-        elif feature_count == 1:
+        elif feature_count == 1 or feature_count < cutoff:
             node['isLeaf'] = 1
             node['label'] = label
             return node
@@ -128,7 +128,7 @@ class DT(object):
             child_node['isLeaf'] = 1
             child_node['label'] = label
 
-            # remove the feature that we just split on from X (feat = # in D feature we are looking at, D is 1 (column))
+            # remove the feature that we just split on from X
             left_node = self.DTconstruct(np.delete(no_subset_final, feat, 1), no_subset_labels, cutoff) if no_subset_final.shape[0] > 0 else child_node
             right_node = self.DTconstruct(np.delete(yes_subset_final, feat, 1), yes_subset_labels, cutoff) if yes_subset_final.shape[0] > 0 else child_node
 
@@ -143,15 +143,17 @@ class DT(object):
         yes = []
         no = []
         label_dict = {'yes_subset': [], 'no_subset': []}
+        index = 0
         for i in X:
             # check value at column (feature)
             # thresholding at 0.5 won't work! Values are from 0 to 255
             if i[feature] >= self.PIXEL_THRESHOLD:
                 yes.append(i)
-                label_dict['yes_subset'].append(Y[i][0][0])  # Y is a column, so Y[i][0] is a 1-element array
+                label_dict['yes_subset'].append(Y[index][0])  # Y is a column, so Y[index] is a 1-element array
             else:
                 no.append(i)
-                label_dict['no_subset'].append(Y[i][0][0])
+                label_dict['no_subset'].append(Y[index][0])
+            index += 1
         return [np.array(yes), np.array(no), label_dict]
 
     def find_most_common_label(self, labels):
@@ -177,7 +179,7 @@ class DT(object):
         majority_yes_count = yes_label_counter.most_common(1)[0][1] if len(label_dict['yes_subset']) > 0 else 0
         majority_no_count = no_label_counter.most_common(1)[0][1] if len(label_dict['no_subset']) > 0 else 0
         total_count = len(label_dict['yes_subset']) + len(label_dict['no_subset'])
-        return (majority_yes_count + majority_no_count) / total_count
+        return (float(majority_yes_count) + float(majority_no_count)) / float(total_count)
 
     def get_max_score(self, score_dict):
         return max(score_dict.iterkeys(), key=(lambda key: score_dict[key]))
@@ -185,8 +187,6 @@ class DT(object):
     def DTpredict(self, node, X):
         # here we get a tree (in the same format as for DTconstruct) and
         # a single 1xD example that we need to predict with
-
-        # TODO: write this method
         if node['isLeaf'] == 1:
             return node['label']
         if X[node['split']] >= self.PIXEL_THRESHOLD:
@@ -203,11 +203,11 @@ class DT(object):
             print indent*4*level + 'Y: ' + str(model['label'])
             return
         print indent*4*level + 'split ' + str(model['split'])
-        left_tree = str(self.DTdraw(model['left'],level+1))
+        left_tree = str(self.DTdraw(model['left'], level+1))
         if left_tree != 'None':
             # print model['left']
             print indent*4*level + 'left: ' + left_tree
-        right_tree = str(self.DTdraw(model['right'],level+1))
+        right_tree = str(self.DTdraw(model['right'], level+1))
         if right_tree != 'None':
             # print model['right']
             print indent*4*level + 'right: ' + right_tree
