@@ -6,6 +6,8 @@ This class is a K-Nearest-Neighbors implementation.
 '''
 import numpy as np
 from numpy.linalg import norm
+from collections import Counter
+
 
 class KNN(object):
     '''
@@ -54,7 +56,7 @@ class KNN(object):
             if('cutoff' not in model.keys() and 'X' not in model.keys() and 'Y' not in model.keys()):
                 print("Error: model does not appear to be a KNN model")
                 return 0
-            sizeModel = X.shape
+            sizeModel = model['X'].shape
             sizeX = test_case.shape
             if(len(sizeX) < 2):
                 if(sizeModel[1] != sizeX[0]):
@@ -71,27 +73,24 @@ class KNN(object):
             return res
         print("Error: unknown KNN mode: need train or predict")
 
-        def KNNpredict(model, test_case):
-            # model contains X which is NxD, Y which is Nx1, cutoff (really K) which is int. See line 47
-            # We return a single value which is the predicted class
+    def KNNpredict(self, model, test_case):
+        # model contains X which is NxD, Y which is Nx1, cutoff (really K) which is int. See line 47
+        # We return a single value which is the predicted class
 
-            X = model['X']
-            Y = model['Y']
-            K = model['cutoff']
+        X = model['X']
+        Y = model['Y']
+        K = model['cutoff']
 
-            # {index: distance}
-            distances = {}
-            index = 0
-            for i in X:
-                distances[index] = norm(i - test_case)
+        # {index: distance}
+        distances = {}
+        index = 0
+        for i in X:
+            distances[index] = norm(i - test_case)
+            index += 1
 
-            # sorted_distances is a list of indexes into X and Y sorted by distance
-            sorted_distances = sorted(distances.items(), key=distances.get)
+        # sorted_distances is a list of indexes into X and Y sorted by distance
+        sorted_distances = sorted(distances.keys(), key=distances.get)
 
-            # the value to return
-            y = 0
-            for i in range(cutoff):
-                y += Y[sorted_distances[i]]
-            
-            return y
+        count = Counter(Y[sorted_distances[i]][0] for i in range(K))
 
+        return count.most_common(1)[0][0]
