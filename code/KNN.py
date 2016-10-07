@@ -87,7 +87,6 @@ class KNN(object):
         for i in X:
             distances[index] = norm(i - test_case)
             index += 1
-        print ''
 
         # sorted_distances is a list of indexes into X and Y sorted by distance
         sorted_distances = sorted(distances.keys(), key=distances.get)
