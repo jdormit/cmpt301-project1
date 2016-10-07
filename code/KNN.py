@@ -7,6 +7,7 @@ This class is a K-Nearest-Neighbors implementation.
 import numpy as np
 from numpy.linalg import norm
 from collections import Counter
+import sys
 
 
 class KNN(object):
@@ -60,7 +61,7 @@ class KNN(object):
             sizeX = test_case.shape
             if(len(sizeX) < 2):
                 if(sizeModel[1] != sizeX[0]):
-                    print("Error: there must be the same number of features in the model and X")                    
+                    print("Error: there must be the same number of features in the model and X")
                 res = self.KNNpredict(model, test_case)
             else:
                 if(sizeModel[1] != sizeX[1]):
@@ -68,6 +69,8 @@ class KNN(object):
                 N = sizeX[0]
                 res = np.zeros(N)
                 for n in range(N):
+                    percent_complete = (float(n+1) / float(N)) * 100.0
+                    sys.stdout.write("\rComputing: %.2f%% complete" % (percent_complete))
                     ans = self.KNNpredict(model, test_case[n, :])
                     res[n] = ans
             return res
