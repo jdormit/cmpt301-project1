@@ -5,6 +5,7 @@ This class is a decision tree implementation taken from Hal Daume.
 @author: km_dh
 '''
 import numpy as np
+import sys
 from collections import Counter
 
 
@@ -71,6 +72,8 @@ class DT(object):
             return res
         print("Error: unknown DT mode: need train or predict")
 
+    used_feature_list = set()
+
     def DTconstruct(self, X, Y, cutoff):
         # the Data comes in as X which is NxD and Y which is Nx1.
         # cutoff is a scalar value. We should stop splitting when N is <= cutoff
@@ -96,28 +99,36 @@ class DT(object):
         #    tree['right'] = ...some other tree...
         node = {}
 
+        total_feature_count = X.shape[1]
+        unvisited_feature_count = total_feature_count - len(self.used_feature_list)
+        progress_percent = (float(len(self.used_feature_list)) / float(total_feature_count)) * 100.0
+        sys.stdout.write("\rTraining: %.2f%% complete\n" % (progress_percent))
+        sys.stdout.flush()
+
         label = self.find_most_common_label(Y)
 
-        feature_count = X.shape[1]
         if self.is_unambiguous(Y):
             node['isLeaf'] = 1
             node['label'] = label
             return node
 
-        elif feature_count == 1 or feature_count < cutoff:
+        elif unvisited_feature_count <= 1 or unvisited_feature_count < cutoff:
             node['isLeaf'] = 1
             node['label'] = label
             return node
 
         else:
             score = {}
-            for i in range(feature_count):
-                yes_subset, no_subset, row_label_mapping = self.get_subsets_and_score(X, Y, i)
+            for i in range(total_feature_count):
+                if (i in self.used_feature_list):
+                    continue
+                yes_subset, no_subset, row_label_mapping = self.get_subsets(X, Y, i)
                 score[i] = (self.get_score(yes_subset, no_subset, row_label_mapping))
 
             # getting max number of correct yes and no's
             feat = self.get_max_score(score)
-            yes_subset_final, no_subset_final, row_label_mapping_final = self.get_subsets_and_score(X, Y, feat)
+            self.used_feature_list.add(feat)
+            yes_subset_final, no_subset_final, row_label_mapping_final = self.get_subsets(X, Y, feat)
 
             # pull out a new Y value for each subset
             yes_subset_labels = np.array([row_label_mapping_final['yes_subset']]).T
@@ -129,8 +140,8 @@ class DT(object):
             child_node['label'] = label
 
             # remove the feature that we just split on from X
-            left_node = self.DTconstruct(np.delete(no_subset_final, feat, 1), no_subset_labels, cutoff) if no_subset_final.shape[0] > 0 else child_node
-            right_node = self.DTconstruct(np.delete(yes_subset_final, feat, 1), yes_subset_labels, cutoff) if yes_subset_final.shape[0] > 0 else child_node
+            left_node = self.DTconstruct(no_subset_final, no_subset_labels, cutoff) if no_subset_final.shape[0] > 0 else child_node
+            right_node = self.DTconstruct(yes_subset_final, yes_subset_labels, cutoff) if yes_subset_final.shape[0] > 0 else child_node
 
             node['isLeaf'] = 0
             node['split'] = feat
@@ -139,7 +150,7 @@ class DT(object):
 
             return node
 
-    def get_subsets_and_score(self, X, Y, feature):
+    def get_subsets(self, X, Y, feature):
         yes = []
         no = []
         label_dict = {'yes_subset': [], 'no_subset': []}
