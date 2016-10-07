@@ -7,7 +7,6 @@ This class is a K-Nearest-Neighbors implementation.
 import numpy as np
 from numpy.linalg import norm
 from collections import Counter
-import sys
 
 
 class KNN(object):
