@@ -33,7 +33,6 @@ class TrainTest(object):
         output['trainTime'] = t1-t0
         print 'Testing...'
         t0 = time.time()
-        print self.testX.shape
         Y = self.learn.res('predict', model=model, test_case=self.testX)
         t1 = time.time()
         output['testTime'] = t1 - t0
