@@ -14,7 +14,7 @@ class DT(object):
 
     # any pixel values greater than this will be encoded as a '1',
     # otherwise they will be encoded as a '0'
-    PIXEL_THRESHOLD = int(os.environ.get('PIXEL_THRESHOLD', '100'))
+    PIXEL_THRESHOLD = float(os.environ.get('PIXEL_THRESHOLD', '100'))
 
     def __init__(self):
         '''
