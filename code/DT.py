@@ -6,6 +6,7 @@ This class is a decision tree implementation taken from Hal Daume.
 '''
 import numpy as np
 import sys
+import os
 from collections import Counter
 
 
@@ -13,7 +14,7 @@ class DT(object):
 
     # any pixel values greater than this will be encoded as a '1',
     # otherwise they will be encoded as a '0'
-    PIXEL_THRESHOLD = 50
+    PIXEL_THRESHOLD = int(os.environ.get('PIXEL_THRESHOLD', '100'))
 
     def __init__(self):
         '''
