@@ -7,6 +7,7 @@ This class is a K-Nearest-Neighbors implementation.
 import numpy as np
 from numpy.linalg import norm
 from collections import Counter
+import sys
 
 
 class KNN(object):
@@ -87,6 +88,8 @@ class KNN(object):
         for i in X:
             distances[index] = norm(i - test_case)
             index += 1
+            progress_complete = (float(index) / float(X.shape[1])) * 100.0
+            sys.stdout.write("\rPredicting: %.2f%% complete\n" % (progress_complete))
 
         # sorted_distances is a list of indexes into X and Y sorted by distance
         sorted_distances = sorted(distances.keys(), key=distances.get)
