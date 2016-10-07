@@ -102,7 +102,7 @@ class DT(object):
         total_feature_count = X.shape[1]
         unvisited_feature_count = total_feature_count - len(self.used_feature_list)
         progress_percent = (float(len(self.used_feature_list)) / float(total_feature_count)) * 100.0
-        sys.stdout.write("\rTraining: %.2f%% complete\n" % (progress_percent))
+        sys.stdout.write("\rTraining: %.2f%% complete" % (progress_percent))
         sys.stdout.flush()
 
         label = self.find_most_common_label(Y)
